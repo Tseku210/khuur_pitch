@@ -15,27 +15,20 @@ class ExamplePage extends StatefulWidget {
 
 class _ExamplePageState extends State<ExamplePage> {
   final PitchSource _source = MicPitchSource();
-  final ClickTrack _clicks = DeviceClickTrack();
 
   StreamSubscription<PitchFrame>? _frames;
-  StreamSubscription<int>? _beats;
   MicPermission? _permission;
   PitchFrame? _frame;
-  int? _beat;
   String? _error;
 
   @override
   void dispose() {
     _frames?.cancel();
-    _beats?.cancel();
     super.dispose();
   }
 
-  // The mic and the clicks each set their own audio session on iOS, so one
-  // stops before the other starts.
-  Future<void> _toggleMic() async {
-    if (_frames != null) return _stopMic();
-    await _stopClicks();
+  Future<void> _toggle() async {
+    if (_frames != null) return _stop();
     final permission = await _source.requestPermission();
     if (!mounted) return;
     setState(() {
@@ -50,29 +43,9 @@ class _ExamplePageState extends State<ExamplePage> {
     });
   }
 
-  Future<void> _toggleClicks() async {
-    if (_beats != null) return _stopClicks();
-    await _stopMic();
-    await _clicks.configure(bpm: 80, beatsPerBar: 4);
-    if (!mounted) return;
-    setState(() {
-      _error = null;
-      _beats = _clicks.beats().listen(
-        (beat) => setState(() => _beat = beat),
-        onError: _onError,
-        onDone: _stopClicks,
-      );
-    });
-  }
-
-  Future<void> _stopMic() async {
+  Future<void> _stop() async {
     await _frames?.cancel();
     if (mounted) setState(() => _frames = _frame = null);
-  }
-
-  Future<void> _stopClicks() async {
-    await _beats?.cancel();
-    if (mounted) setState(() => _beats = _beat = null);
   }
 
   void _onError(Object error) => setState(
@@ -98,15 +71,10 @@ class _ExamplePageState extends State<ExamplePage> {
             Text('Clarity: ${frame?.clarity.toStringAsFixed(2) ?? '-'}'),
             Text('Level: ${frame?.rmsDb.toStringAsFixed(0) ?? '-'} dBFS'),
             Text('Permission: ${_permission?.name ?? '-'}'),
-            Text('Beat: ${_beat == null ? '-' : _beat! + 1}'),
             Text('Last error: ${_error ?? 'none'}'),
             FilledButton(
-              onPressed: _toggleMic,
+              onPressed: _toggle,
               child: Text(_frames == null ? 'Listen' : 'Stop listening'),
-            ),
-            FilledButton.tonal(
-              onPressed: _toggleClicks,
-              child: Text(_beats == null ? 'Play clicks' : 'Stop clicks'),
             ),
             if (_permission == MicPermission.permanentlyDenied)
               OutlinedButton(

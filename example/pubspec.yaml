@@ -1,5 +1,5 @@
 name: khuur_pitch_example
-description: Shows the pitch khuur_pitch reads from the microphone and plays its click track.
+description: Shows the pitch khuur_pitch reads from the microphone.
 publish_to: none
 version: 1.0.0+1
 

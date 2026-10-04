@@ -3,21 +3,19 @@
 Microphone pitch tracking for Flutter tuner apps, on iOS and Android.
 
 The plugin captures mono audio natively and detects pitch in pure Dart with
-YIN. It also plays a metronome click on the audio clock. It was written for a
-tuner for the morin khuur, the Mongolian horse-head fiddle, and nothing in it
-is specific to that instrument.
+YIN. It was written for a tuner for the morin khuur, the Mongolian horse-head
+fiddle, and nothing in it is specific to that instrument.
 
-![The example app showing 174.6 Hz, then 233.1 Hz, then counting the beats of the click track](screenshots/demo.gif)
+![The example app showing the pitch of an F3, then of an A♯3](screenshots/demo.gif)
 
-The example app on an iPhone simulator. It reads an F3 and then an A♯3
-played to the microphone, then plays the click track and counts its beats.
+The example app on an iPhone simulator, reading an F3 and then an A♯3
+played to the microphone.
 
 ## What you get
 
 - `MicPitchSource` streams about 47 `PitchFrame`s a second at 48 kHz. Each
   frame has the pitch in Hz, a clarity from 0 to 1 and the level in dBFS.
 - `AudioCapture` streams the raw PCM if you want to analyse it yourself.
-- `DeviceClickTrack` plays metronome clicks and reports each beat as it sounds.
 - The detector has no native code and no dependency besides Flutter.
 
 ## Setup
@@ -86,26 +84,6 @@ a 2048-sample window with a 1024-sample hop.
 `PitchTracker.track` takes any `Stream<AudioChunk>`, so you can run it over a
 file or a test signal without a microphone.
 
-## Metronome clicks
-
-```dart
-final clicks = DeviceClickTrack();
-await clicks.configure(bpm: 80, beatsPerBar: 4);
-
-final subscription = clicks.beats().listen((beat) {
-  // 0 is the accented first beat of the bar.
-});
-
-await subscription.cancel(); // stops the clicks
-```
-
-The clicks are scheduled natively, so their timing comes from the audio clock
-and not from a Dart timer. `configure` also changes a click track that is
-playing.
-
-On iOS the microphone and the clicks each set their own `AVAudioSession`
-category. Stop one before you start the other.
-
 ## Accuracy
 
 `tool/eval.dart` scores the detector on a synthetic corpus and prints the
@@ -139,8 +117,7 @@ corpus for comparison.
 
 ## Example
 
-`example/` is a small app that shows the live pitch, clarity and level, and
-plays the click track.
+`example/` is a small app that shows the live pitch, clarity and level.
 
 ## License
 
