@@ -1,0 +1,19 @@
+name: khuur_pitch_example
+description: Shows the pitch khuur_pitch reads from the microphone and plays its click track.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  khuur_pitch:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,34 @@
+name: khuur_pitch
+description: Microphone pitch tracking for tuner apps on iOS and Android, with YIN in pure Dart and a metronome click on the audio clock.
+version: 0.1.0
+repository: https://github.com/Tseku210/khuur_pitch
+issue_tracker: https://github.com/Tseku210/khuur_pitch/issues
+
+topics:
+  - audio
+  - pitch-detection
+  - tuner
+  - microphone
+  - metronome
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.khuur.khuur_pitch
+        pluginClass: KhuurPitchPlugin
+      ios:
+        pluginClass: KhuurPitchPlugin
