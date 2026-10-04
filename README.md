@@ -142,20 +142,6 @@ dart run tool/eval.dart
 It also scores the McLeod pitch method (`tool/mpm_detector.dart`) on the same
 corpus for comparison.
 
-### Your own recordings
-
-`tool/eval_recordings.dart` scores the tracker on WAV files of real
-instruments. Record one held note to a file and name it for the note, with
-the pitch it should be near at the end: `khuur-fa_174.6hz.wav`.
-
-```bash
-dart run tool/eval_recordings.dart path/to/recordings
-```
-
-For each file it prints how many of the sounding frames were pitched, how
-many were an octave or a twelfth off, the median pitch and how far the
-frames spread around it. The repository holds no recordings yet.
-
 ## Example
 
 `example/` is a small app that shows the live pitch, clarity and level.
