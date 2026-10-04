@@ -14,7 +14,6 @@ public class KhuurPitchPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   }
 
   private var capture = Capture.idle
-  private let clicks = ClickPlayer()
   private var observers: [NSObjectProtocol] = []
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -24,12 +23,6 @@ public class KhuurPitchPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     registrar.addMethodCallDelegate(instance, channel: control)
     FlutterEventChannel(name: "khuur_pitch/audio", binaryMessenger: registrar.messenger())
       .setStreamHandler(instance)
-    registrar.addMethodCallDelegate(
-      instance,
-      channel: FlutterMethodChannel(
-        name: "khuur_pitch/click", binaryMessenger: registrar.messenger()))
-    FlutterEventChannel(name: "khuur_pitch/beats", binaryMessenger: registrar.messenger())
-      .setStreamHandler(instance.clicks)
   }
 
   override init() {
@@ -54,13 +47,10 @@ public class KhuurPitchPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
   public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
     stop()
-    clicks.stop()
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case "configure":
-      clicks.handle(call, result: result)
     case "checkPermission":
       result(Self.permission(AVCaptureDevice.authorizationStatus(for: .audio)).rawValue)
     case "requestPermission":

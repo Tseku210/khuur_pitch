@@ -34,9 +34,6 @@ class KhuurPitchPlugin :
   private lateinit var context: Context
   private lateinit var control: MethodChannel
   private lateinit var audio: EventChannel
-  private lateinit var click: MethodChannel
-  private lateinit var beats: EventChannel
-  private val clicks = ClickPlayer(main)
   private var activity: ActivityPluginBinding? = null
   private var pendingRequest: MethodChannel.Result? = null
   private var capture: Capture? = null
@@ -47,19 +44,12 @@ class KhuurPitchPlugin :
     control.setMethodCallHandler(this)
     audio = EventChannel(binding.binaryMessenger, "khuur_pitch/audio")
     audio.setStreamHandler(this)
-    click = MethodChannel(binding.binaryMessenger, "khuur_pitch/click")
-    click.setMethodCallHandler(clicks)
-    beats = EventChannel(binding.binaryMessenger, "khuur_pitch/beats")
-    beats.setStreamHandler(clicks)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     stopCapture()
-    clicks.stop()
     control.setMethodCallHandler(null)
     audio.setStreamHandler(null)
-    click.setMethodCallHandler(null)
-    beats.setStreamHandler(null)
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
