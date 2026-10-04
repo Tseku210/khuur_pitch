@@ -1,5 +1,7 @@
 # khuur_pitch
 
+[![pub package](https://img.shields.io/pub/v/khuur_pitch.svg)](https://pub.dev/packages/khuur_pitch)
+
 Microphone pitch tracking for Flutter tuner apps, on iOS and Android.
 
 The plugin captures mono audio natively and detects pitch in pure Dart with
