@@ -7,6 +7,11 @@ YIN. It also plays a metronome click on the audio clock. It was written for a
 tuner for the morin khuur, the Mongolian horse-head fiddle, and nothing in it
 is specific to that instrument.
 
+![The example app showing 174.6 Hz, then 233.1 Hz, then counting the beats of the click track](screenshots/demo.gif)
+
+The example app on an iPhone simulator. It reads an F3 and then an A♯3
+played to the microphone, then plays the click track and counts its beats.
+
 ## What you get
 
 - `MicPitchSource` streams about 47 `PitchFrame`s a second at 48 kHz. Each
