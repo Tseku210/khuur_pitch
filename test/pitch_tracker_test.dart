@@ -194,6 +194,54 @@ void main() {
     expect(frames.map((f) => f.hz), everyElement(isNull));
   });
 
+  for (final (name, amps) in [
+    ('sine', [1.0]),
+    ('bowed tone', [for (var n = 1; n <= 20; n++) 1 / n]),
+  ]) {
+    test('never names a $name above maxHz as a note an octave below', () async {
+      const e5 = 659.26;
+      final samples = Float32List.fromList([
+        for (var i = 0; i < 48000; i++)
+          0.1 *
+              [
+                for (var n = 0; n < amps.length; n++)
+                  amps[n] * sin(2 * pi * (n + 1) * e5 * i / 48000),
+              ].reduce((a, b) => a + b),
+      ]);
+      final frames = await track(
+        chunked(samples, 48000, 1000),
+        tracker: PitchTracker(minHz: 60, maxHz: 600),
+      );
+      expect(frames, isNotEmpty);
+      expect(frames.map((f) => f.hz), everyElement(isNull));
+    });
+  }
+
+  test('the default range names notes from B1 to E6', () async {
+    for (final hz in [61.74, 174.61, 659.26, 1318.51]) {
+      final frames = await track(
+        chunked(sine(hz, 48000, 24000, 0.3), 48000, 1000),
+      );
+      expect(frames, isNotEmpty);
+      for (final f in frames) {
+        expect(f.hz, isNotNull, reason: '$hz Hz');
+        expect(cents(f.hz!, hz).abs(), lessThan(3), reason: '$hz Hz');
+      }
+    }
+  });
+
+  test('a lower threshold drops windows a higher one keeps', () async {
+    final noisy = caseFor('snr10');
+    final chunks = chunked(noisy.samples, noisy.sampleRate, 1000);
+    final strict = await track(chunks, tracker: PitchTracker(threshold: 0.02));
+    final loose = await track(chunks, tracker: PitchTracker(threshold: 0.15));
+    expect(loose.map((f) => f.hz), everyElement(isNotNull));
+    expect(strict.map((f) => f.hz), contains(isNull));
+    for (final f in strict.where((f) => f.hz != null)) {
+      expect(f.clarity, greaterThan(0.98));
+    }
+  });
+
   group('lifecycle', () {
     test(
       'listens to the audio only when listened to, cancels with it',

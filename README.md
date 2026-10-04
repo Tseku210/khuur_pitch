@@ -34,6 +34,19 @@ On iOS, add the reason you use the microphone to `ios/Runner/Info.plist`:
 
 On Android the plugin declares `RECORD_AUDIO` itself.
 
+### What listening does to the audio session
+
+On iOS the plugin sets the shared `AVAudioSession` to the `.record` category
+in `.measurement` mode while it listens, and deactivates the session when the
+stream is cancelled. Other audio stops for that time, your own app's
+included. To play sound, cancel the stream first and set your own category.
+The plugin restarts capture after an interruption such as a phone call, and
+after a route change such as plugging in headphones.
+
+On Android it reads the `UNPROCESSED` audio source where the device has one
+and `VOICE_RECOGNITION` elsewhere, so the signal has no gain control or noise
+suppression.
+
 ## Reading pitch
 
 ```dart
@@ -66,18 +79,32 @@ Capture failures arrive on the stream as a `PlatformException` whose code is
 
 ### Range
 
-The tracker looks for pitches from 60 to 600 Hz by default. Pass your own
-range to follow another instrument:
+The tracker looks for pitches from 60 to 1400 Hz by default, which is B1 to
+F6. Pass your own range to follow another instrument:
 
 ```dart
 final source = MicPitchSource(
-  tracker: PitchTracker(minHz: 70, maxHz: 1400),
+  tracker: PitchTracker(minHz: 30, maxHz: 400),
 );
 ```
 
+A tone outside the range gives a null `hz`. It is never named as a note an
+octave away.
+
 The window is sized to hold 2.5 periods of `minHz`, so a lower `minHz` means
 a longer window and slower frames. At 44.1 and 48 kHz the default range uses
-a 2048-sample window with a 1024-sample hop.
+a 2048-sample window with a 1024-sample hop, and a `minHz` of 30 uses 4096
+and 2048.
+
+Precision falls as the pitch rises, because a high note's period is only a
+few samples long. On a clean tone at 48 kHz the worst error is about 0.3
+cents at 660 Hz and 2.6 cents at 1320 Hz.
+
+### Threshold
+
+`PitchTracker(threshold: 0.15)` is how much aperiodic power a pitched window
+may hold. A pitched frame's clarity is always above 1 minus the threshold.
+Lower it to drop noisier windows, raise it to keep them.
 
 ### Your own audio
 
@@ -114,6 +141,20 @@ dart run tool/eval.dart
 
 It also scores the McLeod pitch method (`tool/mpm_detector.dart`) on the same
 corpus for comparison.
+
+### Your own recordings
+
+`tool/eval_recordings.dart` scores the tracker on WAV files of real
+instruments. Record one held note to a file and name it for the note, with
+the pitch it should be near at the end: `khuur-fa_174.6hz.wav`.
+
+```bash
+dart run tool/eval_recordings.dart path/to/recordings
+```
+
+For each file it prints how many of the sounding frames were pitched, how
+many were an octave or a twelfth off, the median pitch and how far the
+frames spread around it. The repository holds no recordings yet.
 
 ## Example
 

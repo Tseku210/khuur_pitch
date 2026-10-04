@@ -8,28 +8,29 @@ import 'pitch_detector.dart';
 /// Uses the cumulative mean normalized difference d', takes the first dip
 /// below [threshold] and descends it to its local minimum. No fallback to the
 /// global minimum: a window with no dip yields null rather than a noise pitch.
+///
+/// The search starts at the shortest lag, not at the lag of maxHz. A tone
+/// above maxHz also dips at twice its period, so a search that skipped its
+/// first dip would name it an octave low. Found first, it is out of range
+/// and yields null.
 class YinDetector implements PitchDetector {
   YinDetector({
     required int sampleRate,
     required this.windowSize,
-    required double minHz,
-    required double maxHz,
+    required this.minHz,
+    required this.maxHz,
     this.threshold = 0.15,
   }) : _sampleRate = sampleRate.toDouble(),
-       _minHz = minHz,
-       _maxHz = maxHz,
-       _minLag = sampleRate ~/ maxHz,
        _correlogram = Correlogram(windowSize, (sampleRate / minHz).ceil()),
        _cmnd = Float64List((sampleRate / minHz).ceil() + 1);
 
   @override
   final int windowSize;
+  final double minHz;
+  final double maxHz;
   final double threshold;
 
   final double _sampleRate;
-  final double _minHz;
-  final double _maxHz;
-  final int _minLag;
   final Correlogram _correlogram;
   final Float64List _cmnd;
 
@@ -49,7 +50,7 @@ class YinDetector implements PitchDetector {
       cmnd[tau] = running > 0 ? d * tau / running : 1;
     }
 
-    var tau = _minLag;
+    var tau = 2;
     while (tau <= maxLag && cmnd[tau] >= threshold) {
       tau++;
     }
@@ -73,7 +74,7 @@ class YinDetector implements PitchDetector {
     }
 
     final hz = _sampleRate / lag;
-    if (hz < _minHz || hz > _maxHz) return null;
+    if (hz < minHz || hz > maxHz) return null;
     return PitchEstimate(hz, (1 - depth).clamp(0.0, 1.0));
   }
 }

@@ -8,25 +8,32 @@ import 'types.dart';
 /// Turns a PCM stream into pitch frames over overlapping windows.
 ///
 /// Windows follow [windowGeometry] (2048 samples, hop 1024, at 44.1 and
-/// 48 kHz), each frame stamped at its last sample. `hz` is null and
-/// `clarity` 0 when YIN finds no pitch inside [minHz, maxHz]. `rmsDb` is
-/// floored at -120.
+/// 48 kHz for the default [minHz]), each frame stamped at its last sample.
+/// `hz` is null and `clarity` 0 when YIN finds no pitch inside
+/// [minHz, maxHz], which includes a tone above [maxHz]. `rmsDb` is floored
+/// at -120.
 class PitchTracker {
-  PitchTracker({this.minHz = 60, this.maxHz = 600});
+  PitchTracker({this.minHz = 60, this.maxHz = 1400, this.threshold = 0.15});
 
   final double minHz;
   final double maxHz;
 
+  /// How much aperiodic power YIN tolerates in a pitched window, in (0, 1).
+  /// A pitched frame's clarity is above 1 - [threshold]. Lower it to drop
+  /// noisier windows, raise it to keep them.
+  final double threshold;
+
   Stream<PitchFrame> track(Stream<AudioChunk> audio) =>
-      audio.expand(_Tracking(minHz, maxHz).push);
+      audio.expand(_Tracking(minHz, maxHz, threshold).push);
 }
 
 /// The state of one [PitchTracker.track] call.
 class _Tracking {
-  _Tracking(this.minHz, this.maxHz);
+  _Tracking(this.minHz, this.maxHz, this.threshold);
 
   final double minHz;
   final double maxHz;
+  final double threshold;
 
   int _sampleRate = 0;
   late YinDetector _detector;
@@ -69,6 +76,7 @@ class _Tracking {
       windowSize: windowSize,
       minHz: minHz,
       maxHz: maxHz,
+      threshold: threshold,
     );
   }
 
