@@ -66,6 +66,30 @@ void main() {
     expect(chunk.samples, [0.5, -0.25, 1]);
   });
 
+  test(
+    'the capture tells the native side whether the app plays sound',
+    () async {
+      final asked = <Object?>[];
+      messenger.setMockStreamHandler(
+        _audio,
+        MockStreamHandler.inline(
+          onListen: (arguments, _) => asked.add(arguments),
+        ),
+      );
+
+      await capture.stream().listen(null).cancel();
+      await const AudioCapture(withPlayback: true)
+          .stream()
+          .listen(null)
+          .cancel();
+
+      expect(asked, [
+        {'playback': false},
+        {'playback': true},
+      ]);
+    },
+  );
+
   test('listeners share one capture that stops on the last cancel', () async {
     var listens = 0;
     var cancels = 0;

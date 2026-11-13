@@ -9,6 +9,10 @@ public class KhuurPitchPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     case interrupted(FlutterEventSink)
   }
 
+  /// Whether the app plays its own sound while the mic listens, as the
+  /// Dart side's `AudioCapture.withPlayback` asked on listen.
+  private var withPlayback = false
+
   private enum MicPermission: String {
     case granted, denied, permanentlyDenied
   }
@@ -84,6 +88,7 @@ public class KhuurPitchPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink
   ) -> FlutterError? {
     stop()
+    withPlayback = (arguments as? [String: Any])?["playback"] as? Bool ?? false
     start(events)
     return nil
   }
@@ -101,7 +106,15 @@ public class KhuurPitchPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     // The input node reports a 0 Hz format until the session records and is active.
     let session = AVAudioSession.sharedInstance()
     do {
-      try session.setCategory(.record, mode: .measurement)
+      if withPlayback {
+        // `.playAndRecord` plays to the earpiece unless told otherwise, and
+        // to Bluetooth headphones only in call quality without A2DP.
+        try session.setCategory(
+          .playAndRecord, mode: .measurement,
+          options: [.defaultToSpeaker, .allowBluetoothA2DP])
+      } else {
+        try session.setCategory(.record, mode: .measurement)
+      }
       try session.setActive(true)
     } catch {
       fail(sink, "audioFailed", "Audio session: \(error.localizedDescription)")

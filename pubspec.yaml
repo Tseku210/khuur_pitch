@@ -1,6 +1,6 @@
 name: khuur_pitch
 description: Microphone pitch tracking for Flutter tuner apps on iOS and Android. Native capture, YIN in pure Dart, and a clarity and level for every frame.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/Tseku210/khuur_pitch
 issue_tracker: https://github.com/Tseku210/khuur_pitch/issues
 

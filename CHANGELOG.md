@@ -1,3 +1,9 @@
+## 0.1.1
+
+- `AudioCapture(withPlayback: true)` lets the app play sound while the mic
+  listens. On iOS the session is `.playAndRecord` in `.measurement` mode, to
+  the speaker, instead of `.record`.
+
 ## 0.1.0
 
 - Microphone capture as mono float PCM on iOS and Android.
