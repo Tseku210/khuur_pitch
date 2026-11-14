@@ -42,11 +42,26 @@ On iOS the plugin sets the shared `AVAudioSession` to the `.record` category
 in `.measurement` mode while it listens, and deactivates the session when the
 stream is cancelled. Other audio stops for that time, your own app's
 included. To play sound, cancel the stream first and set your own category.
+
+To play your own sound while the mic listens, as an app that plays along
+with the player does, capture with playback:
+
+```dart
+final source = MicPitchSource(capture: const AudioCapture(withPlayback: true));
+```
+
+The session is then `.playAndRecord`, still in `.measurement` mode, with
+`.defaultToSpeaker`, so the sound comes from the speaker and not the
+earpiece, and `.allowBluetoothA2DP`, so Bluetooth headphones play it at full
+quality. Do not set the category yourself while it listens, or the last one
+set wins. The mic hears what the speaker plays, so expect your own sound in
+the frames.
 The plugin restarts capture after an interruption such as a phone call, and
 after a route change such as plugging in headphones.
 
-On Android it reads the `UNPROCESSED` audio source where the device has one
-and `VOICE_RECOGNITION` elsewhere, so the signal has no gain control or noise
+On Android playback and the mic run together either way. The plugin reads
+the `UNPROCESSED` audio source where the device has one and
+`VOICE_RECOGNITION` elsewhere, so the signal has no gain control or noise
 suppression.
 
 ## Reading pitch
